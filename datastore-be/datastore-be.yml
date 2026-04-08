@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datastore-backend
+  labels:
+    type: backend
+spec:
+  template:
+    metadata:
+      name: datastore-backend
+      labels:
+        type: backend
+    spec:
+      containers:
+        - name: datastore-backend
+          image: 8072388539/datastore:v35.0
+          env:
+            - name: MYSQL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: datastore-be-cm
+                  key: mysqlHost
+            - name: MYSQL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: datastore-be-cm
+                  key: mysqlUname
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: datastore-be-secret
+                  key: mysqlPassword
+          resources:
+            requests:
+              cpu: 100m
+              memory: "500Mi"
+            limits:
+              cpu: 1
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /actuator
+              port: 8084
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            timeoutSeconds: 4
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator
+              port: 8084
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            timeoutSeconds: 4
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator
+              port: 8084
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            timeoutSeconds: 4
+            failureThreshold: 3
+  replicas: 5
+  selector:
+    matchLabels:
+      type: backend
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: datastore-backend-svc
+spec:
+  ports:
+    - port: 8081
+      targetPort: 8084
+  selector:
+    type: backend
