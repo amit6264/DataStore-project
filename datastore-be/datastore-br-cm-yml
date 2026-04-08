@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: datastore-be-cm
+data:
+  mysqlHost: mysql
+  mysqlUname: root
